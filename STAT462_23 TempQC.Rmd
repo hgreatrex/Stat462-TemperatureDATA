@@ -1,0 +1,125 @@
+---
+title: "test"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::robobook:
+    highlight: kate
+---
+
+# Set up the lab
+
+```{r setup, include=FALSE}
+## Global options
+rm(list=ls())
+knitr::opts_chunk$set(cache = TRUE,warning=FALSE,message=FALSE)
+```
+
+```{r}
+library(readxl)  # read in data
+library(tidyverse) # ALL
+library(sp)      # spatial
+library(raster)  # spatial
+library(terra)   # spatial
+library(sf)      # spatial
+library(tmap)    # mapping
+```
+
+# Read in our data
+
+## Temp data
+
+This was collected by Dr G over the course of a few weeks. The unit of analysis is a temperature reading (e.g. a single measurement of temperature at a specific time and place).  I put out 26 sensors - I actually put out a few more but I'm struggling to get them to read out.
+
+
+```{r}
+AllData    <- read_excel("/Users/hlg5155/Documents/GitHub/Teaching/Stat462-TempLab/Data/STAT462_TrainingData.xlsx")
+AllData$DateTime <- paste(AllData$Date,"T",sprintf("%02d",AllData$Hour),":00:00",sep="")
+AllData$Date <- as.Date(AllData$Date)
+AllData$DateTime <-      as.POSIXct( AllData$DateTime ,format="%Y-%m-%dT%H:%M:%OS")
+
+AllData    <- na.omit(AllData)
+AllData.sf <- st_as_sf(AllData,coords=c( "X","Y"),crs="EPSG:32617")
+```
+
+
+
+## Boundry and raster data
+
+This will be useful in making pretty plots - and assessing your output.
+
+DR G WILL ADD IN CODE HERE
+
+
+## Prediction data
+
+
+DR G WILL ADD IN CODE HERE
+
+
+We're also going to want to include some predictor factors.  This code will allow us to look at them
+
+```{r}
+# OK, so we want to make some summaries for each temperature sensor.
+# First, let's concentrate on the things that don't change - so I'll call it meta data
+# e.g. the data about each point rather than our response.
+# These are things that don't change with time
+
+StationInfo <- AllData.sf %>%
+  group_by(Serial) %>%
+  summarise(TownshipName = first(TownshipName),
+            Elevation = first(Elevation_1m),
+            Slope = first(Slope_1m),
+            Roughness = first(Roughness_1m),
+            Aspect = first(Aspect_1m),
+            LandCover_Code = first(LandCover_Code),
+            NCLD_Percent_Tree_Cover = first(NCLD_Percent_Tree_Cover),
+            NCLD_Percent_Concrete = first(NCLD_Percent_Concrete),
+            DistRoad = first(DistanceToRoad)) %>%
+  arrange(Serial, .locale = "en")
+
+NumberStations <- nrow(StationInfo)
+
+```
+
+
+# Checking each station
+
+
+```{r}
+# change n for different stations
+n=1
+
+# plot
+   StationData <- AllData[which(AllData$Serial %in% StationInfo$Serial[n]),]
+   plot(StationData$Temp_F ~ StationData$DateTime, type="h",
+        main=paste("Sensor:",StationData$Serial[1]),
+        xlab="Date/Time",ylab="Temperature(F)")
+   
+# summarise
+StationSummary <- StationData %>%
+  group_by(Date) %>%
+  summarise(MinTemp = min(Temp_F),
+            MaxTemp = max(Temp_F)) %>%
+  arrange(Date, .locale = "en")
+
+
+# filter as needed
+DarkData <- StationData[which(StationData$Light_Lux <= 0),]
+StationQC <- DarkData[which(DarkData$Temp_F < 50),]
+
+# Replot
+   plot(StationQC$Temp_F ~ StationQC$DateTime, type="h",
+        main=paste("Sensor:",StationData$Serial[1]),
+        xlab="Date/Time",ylab="Temperature(F)")
+   
+
+
+```
+
+
+```{r}
+
+
+```
+
+

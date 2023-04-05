@@ -1,0 +1,23 @@
+---
+title: "Temperature Project"
+author: "Dr Greatrex"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+# Overview and Purpose
+
+This semester-long project is intended to give you an idea of what it's like to conduct statistical research in the real world without impacting your grade. By this I mean that we are collecting real data, it's likely to be "messy" and its real science, I genuinely have no idea what the results will be.
+
+It will have several parts:
+
+1.  Set up, exploring the meta data and setting up your final report (this week)
+
+2.  Creating a set of simple linear models to understand how a single variable impacts State College temperatures
+
+3.  Creating some more complex linear models to understand what impacts the temperatures at different locations
+
+You will be creating a group report, structured so that there are clear parts that you individually contribute to.

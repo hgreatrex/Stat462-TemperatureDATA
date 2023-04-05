@@ -1,0 +1,70 @@
+---
+title: "Adding meta data"
+author: "Dr G"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+```{r,warning=FALSE,message=FALSE}
+library(tidyverse)
+library(elevatr)
+library(readxl)
+library(sf)
+library(tmap)
+library(terra)
+library(tigris)
+#install.packages("remotes")
+#remotes::install_github("Chrisjb/basemapR")
+library(basemapR)
+```
+
+## Overview
+
+Over the last week, I have been putting temperature sensors around State College. You will have the data itself for quality control and modelling in the next lab.  Your job for this project lab is to add in additional variables using the HUGE amount of data available for State College.
+
+As many of you are newer to R, I will be providing some of the example code.
+
+
+## Read in the data
+
+First, we can read in the data from the google sheet here
+
+```{r}
+MetaData <- read_excel("MetaData.xlsx")
+
+# Make R understand that the spatial coordinates are "special"
+MetaData.sf <- st_as_sf(MetaData,coords=c("Long","Lat"),crs=4326)
+
+# Change the map projection to one more suitable for local analysis
+MetaData.sf <- st_transform(MetaData.sf,32128)
+
+# Work out the spatial bounding box around the area 
+# And expand by 500m on each side.  Note, I can overwrite my variables!
+MetaData.bbox <- st_bbox(MetaData.sf)
+MetaData.bbox <- expand_bbox(MetaData.bbox, 500, 500, crs_out = 32128)
+
+```
+
+```{r}
+# Download the country borders
+CentreCounty <- county_subdivisions("Pennsylvania",county="Centre")	
+CentreCounty <- st_transform(CentreCounty,32128)
+
+# And crop to our area of interest, a boundary box (bbox)
+Borders_StateCollege <- st_crop(st_geometry(CentreCounty),MetaData.bbox)
+
+```
+
+
+
+```{r}
+# Add in elevation
+#Elevation.Raster <- get_elev_raster(MetaData.bbox, z = 14,clip="bbox")
+
+
+```
+
+
